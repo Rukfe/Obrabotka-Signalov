@@ -58,17 +58,17 @@ def plot_std_signal():
             current_plot = None
 
         # Создаем график
-        fig = Figure(figsize=(25, 3.5))
+        fig = Figure(figsize=(60, 2))
         ax = fig.add_subplot(111)
         ax.plot(data)
         ax.set(title="Исходный сигнал")
         ax.grid(True)
 
         # Создаем встроенный график Tkinter (для результатов в окне приложения)
+
         canvas = FigureCanvasTkAgg(fig, master=graph_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
+        canvas.get_tk_widget().pack(fill=tk.X, expand=True)
         current_plot = canvas
 
 
@@ -86,8 +86,12 @@ def plot_cf_signal():
 
 # Создаем графический интерфейс пользователя
 window = tk.Tk()
-window.geometry("1440x900")
+window.geometry("1100x700")
 window.title("Задание 1 v_0.0.1")
+
+# Фрейм для графика
+graph_frame = tk.Frame(window)
+graph_frame.pack()
 
 # Кнопка "Чтение файла"
 read_button = tk.Button(window, text="Чтение файла", command=read_file)
@@ -112,10 +116,6 @@ close_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
 # Список с прокруткой для отображения "Номер точки" и "Значение"
 data_frame = tk.Frame(window)
 data_frame.pack(side="bottom", anchor="s", ipadx=1, ipady=1)
-
-# Фрейм для графика
-graph_frame = tk.Frame(window)
-graph_frame.pack(anchor="sw")
 
 data_scrollbar = tk.Scrollbar(data_frame)
 data_scrollbar.pack(side="right", anchor="s", ipadx=3, ipady=1)
