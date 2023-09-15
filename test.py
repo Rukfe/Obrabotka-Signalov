@@ -32,12 +32,11 @@ def read_file():
 
             # Создаем таблицу из массива "data"
             df = pd.DataFrame({"Номер точки": range(len(data)), "Значение": data})
+            print("Файл прочитан успешно")
 
             # Выводим таблицу в терминале
             print("Данные из файла:")
             print(df)
-
-            status_label.config(text="Файл прочитан успешно")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
             data_listbox.delete(0, tk.END)
@@ -59,11 +58,10 @@ def plot_std_signal():
             current_plot = None
 
         # Создаем график
-        fig = Figure(figsize=(18, 3.5))
+        fig = Figure(figsize=(25, 3.5))
         ax = fig.add_subplot(111)
         ax.plot(data)
-        ax.set(xlabel="Время", ylabel="Значение",
-               title="Исходный сигнал")
+        ax.set(title="Исходный сигнал")
         ax.grid(True)
 
         # Создаем встроенный график Tkinter (для результатов в окне приложения)
@@ -88,46 +86,42 @@ def plot_cf_signal():
 
 # Создаем графический интерфейс пользователя
 window = tk.Tk()
-window.geometry("1920x1080")
+window.geometry("1440x900")
 window.title("Задание 1 v_0.0.1")
 
 # Кнопка "Чтение файла"
 read_button = tk.Button(window, text="Чтение файла", command=read_file)
-read_button.place(x=10, y=935, width=110, height=70)
+read_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для построения исходного сигнала"
 plot_std_button = tk.Button(window, text="Исходный сигнал", command=plot_std_signal)
-plot_std_button.place(x=130, y=935, width=110, height=70)
+plot_std_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для построения спектра"
 plot_spectr_button = tk.Button(window, text="Спектр", command=plot_spectr_signal)
-plot_spectr_button.place(x=250, y=935, width=110, height=70)
+plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для построения сигнала после ЦФ"
 plot_spectr_button = tk.Button(window, text="ЦФ", command=plot_cf_signal)
-plot_spectr_button.place(x=370, y=935, width=110, height=70)
+plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для закрытия окна
 close_button = tk.Button(window, text="Выход", command=window.destroy)
-close_button.place(x=1790, y=935, width=110, height=70)
+close_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
 
 # Список с прокруткой для отображения "Номер точки" и "Значение"
 data_frame = tk.Frame(window)
-data_frame.place(x=1490, y=840, width=110)
+data_frame.pack(side="bottom", anchor="s", ipadx=1, ipady=1)
 
 # Фрейм для графика
 graph_frame = tk.Frame(window)
-graph_frame.pack()
-
-# Статусное сообщение
-status_label = tk.Label(window, text="")
-status_label.pack()
+graph_frame.pack(anchor="sw")
 
 data_scrollbar = tk.Scrollbar(data_frame)
-data_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+data_scrollbar.pack(side="right", anchor="s", ipadx=3, ipady=1)
 
 data_listbox = tk.Listbox(data_frame, yscrollcommand=data_scrollbar.set)
-data_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+data_listbox.pack(side="right", anchor="s", ipadx=1, ipady=2)
 
 data_scrollbar.config(command=data_listbox.yview)
 
