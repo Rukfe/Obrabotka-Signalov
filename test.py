@@ -5,16 +5,20 @@ import pandas as pd
 import colorama
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+# файл:5  канал:2
 
 # Инициализация модуля colorama
 colorama.init()
 
 # Глобальная переменная для хранения данных после чтения файла
 data = None
-
 # Переменная для хранения текущего графика
 current_plot = None
 
+# Функция для выбора канала
+def choose_channel():
+    global current_channel
+    current_channel = int(input("Введите номер канала: "))
 
 # Функция для чтения файла
 def read_file():
@@ -32,11 +36,7 @@ def read_file():
 
             # Создаем таблицу из массива "data"
             df = pd.DataFrame({"Номер точки": range(len(data)), "Значение": data})
-            print("Файл прочитан успешно")
-
-            # Выводим таблицу в терминале
-            print("Данные из файла:")
-            print(df)
+            print(colorama.Fore.GREEN, "Файл прочитан успешно")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
             data_listbox.delete(0, tk.END)
@@ -50,7 +50,7 @@ def read_file():
 def plot_std_signal():
     global current_plot
     if data is None:
-        print("Файл не был выбран")
+        print("Файл не выбран")
     else:
         # Удаляем предыдущий график, если он существует (для результатов в окне приложения)
         if current_plot is not None:
@@ -73,7 +73,7 @@ def plot_std_signal():
 
 
 # Функция для построения графика спектра
-def plot_spectr_signal():
+def plot_spectrum_signal():
     print(colorama.Fore.RED + "Внимание!\nПостроение графика спектра пока не доступно!")
     window.destroy()
 
@@ -102,7 +102,7 @@ plot_std_button = tk.Button(window, text="Исходный сигнал", comman
 plot_std_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для построения спектра"
-plot_spectr_button = tk.Button(window, text="Спектр", command=plot_spectr_signal)
+plot_spectr_button = tk.Button(window, text="Спектр", command=plot_spectrum_signal)
 plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Кнопка для построения сигнала после ЦФ"
