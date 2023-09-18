@@ -1,24 +1,22 @@
 import tkinter as tk
 from tkinter import filedialog
-import numpy as np
-import pandas as pd
+
 import colorama
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+# Инициализация модуля colorama
+from scipy import signal
+
 # файл:5  канал:2
 
-# Инициализация модуля colorama
 colorama.init()
 
 # Глобальная переменная для хранения данных после чтения файла
-data = None
 # Переменная для хранения текущего графика
 current_plot = None
+canvases = None
 
-# Функция для выбора канала
-def choose_channel():
-    global current_channel
-    current_channel = int(input("Введите номер канала: "))
 
 # Функция для чтения файла
 def read_file():
@@ -33,9 +31,6 @@ def read_file():
         with open(filename, "rb") as file:
             # Читаем данные из файла в массив "data"
             data = np.fromfile(file, dtype=np.float32)
-
-            # Создаем таблицу из массива "data"
-            df = pd.DataFrame({"Номер точки": range(len(data)), "Значение": data})
             print(colorama.Fore.GREEN, "Файл прочитан успешно")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
@@ -48,28 +43,47 @@ def read_file():
 
 # Функция для построения графика исходного сигнала
 def plot_std_signal():
-    global current_plot
-    if data is None:
-        print("Файл не выбран")
-    else:
-        # Удаляем предыдущий график, если он существует (для результатов в окне приложения)
-        if current_plot is not None:
-            current_plot.get_tk_widget().pack_forget()
-            current_plot = None
+    global canvases
+    if canvases is not None:
+        canvases.get_tk_widget().pack_forget()
+        canvases = None
 
-        # Создаем график
-        fig = Figure(figsize=(60, 2))
-        ax = fig.add_subplot(111)
-        ax.plot(data)
-        ax.set(title="Исходный сигнал")
-        ax.grid(True)
+    # Создание цифрового фильтра с прямоугольной идеальной формой АЧХ
+    fs = 2000  # Частота дискретизации
+    delta_f = 40  # Ширина полосы частот канала
+    f0 = [40, 80, 120, 160, 200]  # Центральные частоты каналов (40, 80, 120, 160, 200 Гц)
 
-        # Создаем встроенный график Tkinter (для результатов в окне приложения)
+    # Создание фильтров для каждого канала
+    filters = []
+    for freq in f0:
+        b = signal.firwin(101, [freq - delta_f / 2, freq + delta_f / 2], fs=fs)
+        filters.append(b)
 
-        canvas = FigureCanvasTkAgg(fig, master=graph_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.X, expand=True)
-        current_plot = canvas
+    # Разделение многоканального сигнала на отдельные каналы
+    num_channels = len(f0)
+    channel_data = np.reshape(data, (num_channels, -1))
+
+    # Выделение сигнала второго канала с помощью фильтрации ДПФ
+    channel_fft = signal.lfilter(filters[1], 1, channel_data[1])
+
+    # Преобразуем обратно в одномерный массив
+    output_data = np.zeros_like(data)
+    output_data[:len(channel_fft)] = channel_fft
+
+    # Построение графика сигнала второго канала после фильтрации
+    # Создаем график
+    fig = Figure(figsize=(60, 2))
+    ax = fig.add_subplot(111)
+    ax.plot(output_data)
+    ax.set(title="Исходный сигнал")
+    ax.grid(True)
+
+    # Создаем встроенный график Tkinter (для результатов в окне приложения)
+
+    canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.X, expand=True)
+    canvases = canvas
 
 
 # Функция для построения графика спектра
