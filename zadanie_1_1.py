@@ -1,5 +1,6 @@
 import colorama
 import numpy as np
+from matplotlib.figure import Figure
 from numpy.fft import fft
 import tkinter as tk
 from tkinter import filedialog
@@ -27,11 +28,11 @@ def read_file():
             print(colorama.Fore.GREEN, "Файл прочитан успешно")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
-            data_listbox.delete(0, tk.END)
+            data_listbox_isx.delete(0, tk.END)
 
             # Заполняем список данными из файла (для результатов в окне приложения)
             for index, value in enumerate(data):
-                data_listbox.insert(tk.END, f"{index}: {value}")
+                data_listbox_isx.insert(tk.END, f"{index}: {value}")
 
 
 # Строим график исходного сигнала
@@ -41,11 +42,12 @@ def std_graph():
         canvases.get_tk_widget().pack_forget()
         canvases = None
 
-    fig1 = plt.figure(figsize=(60, 2))
-    plt.plot(data)
-    fig_canvas1 = FigureCanvasTkAgg(fig1, master=app)
+    fig1 = Figure(figsize=(60, 2))
+    ax = fig1.add_subplot(111)
+    ax.plot(data)
+    fig_canvas1 = FigureCanvasTkAgg(fig1, master=graph_container)
     fig_canvas1.draw()
-    fig_canvas1.get_tk_widget().pack()
+    fig_canvas1.get_tk_widget().pack(fill=tk.X, expand=True)
     canvases = fig_canvas1
 
 
@@ -60,15 +62,17 @@ def spectr_graph():
     spectrum = np.abs(fft_result)
     freqs = np.fft.fftfreq(len(data))
 
-    fig2 = plt.figure(figsize=(60, 2))
-    plt.plot(freqs, spectrum)
-    canvas2 = FigureCanvasTkAgg(fig2, master=app)  # Создаем холст для отображения графика
+    fig2 = Figure(figsize=(60, 2))
+    ax = fig2.add_subplot(111)
+    ax.plot(freqs, spectrum)
+    canvas2 = FigureCanvasTkAgg(fig2, master=graph_container2)  # Создаем холст для отображения графика
     canvas2.draw()
-    canvas2.get_tk_widget().pack()
+    canvas2.get_tk_widget().pack(fill=tk.X, expand=True)
     canvases = canvas2
 
 
 def plot_cf_signal():
+    global data
     global canvases
     if canvases is not None:
         canvases.get_tk_widget().pack_forget()
@@ -82,20 +86,21 @@ def plot_cf_signal():
     # Создание фильтров для каждого канала
     filters = []
     for freq in f0:
-        b = signal.firwin(165, [freq - delta_f / 2, freq + delta_f / 2], fs=fs, pass_zero="bandpass")
+        # Вычисление КИХ-фильтра
+        b = signal.firwin(65, [freq - delta_f / 2, freq + delta_f / 2], fs=fs, pass_zero="bandpass")
         filters.append(b)
 
-    # Выделение сигнала второго канала с помощью фильтрации ДПФ
-    global channel_dpf
-    channel_dpf = signal.filtfilt(filters[1], 1, data)
+    # Выделение сигнала второго канала с помощью фильтрации КИХ-фильтром
+    global channel_cf
+    channel_cf = signal.lfilter(filters[1], 1, data)
+
 
     # Построение графика сигнала второго канала после фильтрации
-    fig4 = plt.figure(figsize=(60, 2))
-    plt.plot(channel_dpf)
-    plt.grid()
-    canvas4 = FigureCanvasTkAgg(fig4, master=app)  # Создаем холст для отображения графика
+    fig4 = Figure(figsize=(60, 2))
+    ax = fig4.add_subplot(111)
+    ax.plot(channel_cf)
+    canvas4 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
     canvas4.draw()
-
     canvas4.get_tk_widget().pack(fill=tk.X, expand=True)
     canvases = canvas4
 
@@ -105,7 +110,7 @@ def plot_cf_signal():
     bit_values = []
 
     # Разбиваем временной ряд на 5 равных частей
-    signal_parts = np.array_split(channel_dpf, 5)
+    signal_parts = np.array_split(channel_cf, 5)
 
     # Определяем значение бита для каждой части сигнала
     for part in signal_parts:
@@ -128,6 +133,10 @@ app.title("Сигнал и спектр")
 # Создаем контейнер для графиков
 graph_container = tk.Frame(app)
 graph_container.pack()
+graph_container2 = tk.Frame(app)
+graph_container2.pack()
+graph_container3 = tk.Frame(app)
+graph_container3.pack()
 
 # Кнопка "Чтение файла"
 read_button = tk.Button(app, text="Чтение файла", command=read_file)
@@ -145,9 +154,17 @@ plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 plot_cf_button = tk.Button(app, text="ЦФ", command=plot_cf_signal)
 plot_cf_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
+# Кнопка для закрытия окна
+close_button = tk.Button(app, text="Выход", command=app.destroy)
+close_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
+
 # Создаем список для отображения данных из файла
-data_listbox = tk.Listbox(app)
-data_listbox.pack(side="right", anchor="s", ipadx=1, ipady=2)
+data_listbox_isx = tk.Listbox(app)
+data_listbox_isx.pack(side="right", anchor="s", ipadx=10, ipady=2)
+
+# Создаем список для отображения данных цф
+data_listbox_cf = tk.Listbox(app)
+data_listbox_cf.pack(side="right", anchor="s", ipadx=15, ipady=2)
 
 # Запускаем главный цикл приложения
 app.mainloop()
