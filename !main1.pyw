@@ -7,7 +7,7 @@ from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy import signal
 
-# Определяем переменные для графиков
+# Определяем переменные
 canvases1, canvases2, canvases4 = None, None, None
 global data, filename
 
@@ -17,7 +17,7 @@ def read_file():
 
     # Открываем окно выбора файла
     global filename
-    filename = filedialog.askopenfilename()
+    filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])
 
     if not filename:
         print(colorama.Fore.RED, "Файл не выбран")
@@ -30,16 +30,18 @@ def read_file():
             print(colorama.Fore.GREEN, "Файл прочитан успешно")
             log_listbox.delete(0, tk.END)
             log_listbox.insert(tk.END, f"Файл прочитан успешно")
+            log_listbox.insert(tk.END, f"ОБРАТИТЕ ВНИМАНИЕ!")
+            log_listbox.insert(tk.END, f"Графики строятся после нажатия кнопки")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
             data_listbox_isx.delete(0, tk.END)
 
             # Заполняем список данными из файла (для результатов в окне приложения)
             for index, value in enumerate(data):
-                data_listbox_isx.insert(tk.END, f"{index}: {value}")
+                data_listbox_isx.insert(tk.END, f"{index + 1}: {value}")
 
 
-# Создаем функции для построения в приложении пустых графиков
+# Создаем функции для построения пустых графиков в приложении
 def graph_empty_isx():
     global canvases1
     fig1 = Figure(figsize=(60, 2))
@@ -102,9 +104,9 @@ def spectr_graph():
     if canvases2 is not None:
         canvases2.get_tk_widget().pack_forget()
 
-    fft_result = np.fft.fft(data)
-    spectrum = np.abs(fft_result)
-    freqs = np.fft.fftfreq(len(data))
+    fft_result = np.fft.fft(data)  # Применение преобразования Фурье к массиву данных
+    spectrum = np.abs(fft_result)  # Вычисление спектра сигнала
+    freqs = np.fft.fftfreq(len(data))  # Вычисление дискретных частот для спектра на основе длины массива данных.
 
     fig2 = Figure(figsize=(60, 2))
     ax = fig2.add_subplot(111)
@@ -139,7 +141,7 @@ def plot_cf_signal():
     # Заполняем список данными выделенного канала (для результатов в окне приложения)
     data_listbox_cf.delete(0, tk.END)
     for index, value in enumerate(channel_dpf):
-        data_listbox_cf.insert(tk.END, f"{index}: {value}")
+        data_listbox_cf.insert(tk.END, f"{index + 1}: {value}")
 
     # Построение графика сигнала второго канала после фильтрации
     fig4 = Figure(figsize=(60, 2))
@@ -176,7 +178,7 @@ def plot_cf_signal():
 
 # Создаем окно приложения
 app = tk.Tk()
-app.geometry("1100x700")
+app.geometry("1200x700")
 app.title("Задание 1")
 
 # Создаем контейнеры для графиков
@@ -210,7 +212,7 @@ plot_cf_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Список состояния и вывод 5-битового кода
 log_listbox = tk.Listbox(app)
-log_listbox.pack(side="left", anchor="sw", ipadx=10, ipady=2)
+log_listbox.pack(side="left", anchor="sw", ipadx=60, ipady=2)
 
 # Кнопка для закрытия окна
 close_button = tk.Button(app, text="Выход", command=app.destroy)
@@ -218,11 +220,13 @@ close_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
 
 # Создаем список для отображения данных цф
 data_listbox_cf = tk.Listbox(app)
-data_listbox_cf.pack(side="right", anchor="s", ipadx=15, ipady=2)
+data_listbox_cf.pack(side="right", anchor="s", ipadx=25, ipady=2)
+data_listbox_cf.insert(tk.END, f"Данные после ЦФ:")
 
 # Создаем список для отображения данных из файла
 data_listbox_isx = tk.Listbox(app)
-data_listbox_isx.pack(side="right", anchor="s", ipadx=10, ipady=2)
+data_listbox_isx.pack(side="right", anchor="s", ipadx=25, ipady=2)
+data_listbox_isx.insert(tk.END, f"Данные исходного сигнала:")
 
 # Запускаем главный цикл приложения
 app.mainloop()

@@ -1,11 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog
-
 import colorama
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-# Инициализация модуля colorama
 from scipy import signal
 
 # файл:5  канал:2
