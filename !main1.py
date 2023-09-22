@@ -196,15 +196,15 @@ graph_empty_cf()
 read_button = tk.Button(app, text="Чтение файла", command=read_file)
 read_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения исходного сигнала"
+# Кнопка для построения исходного сигнала
 plot_std_button = tk.Button(app, text="Исходный сигнал", command=std_graph)
 plot_std_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения спектра"
+# Кнопка для построения спектра
 plot_spectr_button = tk.Button(app, text="Спектр", command=spectr_graph)
 plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения сигнала после ЦФ"
+# Кнопка для построения сигнала после ЦФ
 plot_cf_button = tk.Button(app, text="ЦФ", command=plot_cf_signal)
 plot_cf_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 

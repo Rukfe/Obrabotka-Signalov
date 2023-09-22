@@ -6,7 +6,7 @@ omega_zero = np.pi / 5
 N = 500
 M = 0.028
 
-t = np.linspace(0, N, num=N+1)
+t = np.linspace(0, N, num=N + 1)
 S = (1 + M * np.sin(omega * t)) * np.sin(omega_zero * t)
 
 plt.plot(t, S)
