@@ -180,7 +180,7 @@ def plot_cf_signal():
 app = tk.Tk()
 app.geometry("1200x700")
 app.title("ЦОС")
-app.iconbitmap("isxodniki/test/icon.ico")
+app.iconbitmap("icon.ico")
 
 # Создаем контейнеры для графиков
 graph_container = tk.Frame(app)
