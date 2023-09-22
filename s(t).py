@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-Ω = np.pi / 100
-ω0 = np.pi / 5
+omega = np.pi / 100
+omega_zero = np.pi / 5
 N = 500
 M = 0.028
 
 t = np.linspace(0, N, num=N+1)
-S = (1 + M * np.sin(Ω * t)) * np.sin(ω0 * t)
+S = (1 + M * np.sin(omega * t)) * np.sin(omega_zero * t)
 
 plt.plot(t, S)
 plt.xlabel('t')

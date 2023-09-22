@@ -111,15 +111,15 @@ graph_frame.pack()
 read_button = tk.Button(window, text="Чтение файла", command=read_file)
 read_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения исходного сигнала"
+# Кнопка для построения исходного сигнала
 plot_std_button = tk.Button(window, text="Исходный сигнал", command=plot_std_signal)
 plot_std_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения спектра"
+# Кнопка для построения спектра
 plot_spectr_button = tk.Button(window, text="Спектр", command=plot_spectrum_signal)
 plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
-# Кнопка для построения сигнала после ЦФ"
+# Кнопка для построения сигнала после ЦФ
 plot_spectr_button = tk.Button(window, text="ЦФ", command=plot_cf_signal)
 plot_spectr_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
