@@ -13,12 +13,8 @@ global data, filename
 
 
 def read_file():
-    global data
-
-    # Открываем окно выбора файла
-    global filename
-    filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])
-
+    global data, filename
+    filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])  # Открываем окно выбора файла
     if not filename:
         log_listbox.insert(tk.END, f"Файл не выбран")
     else:
@@ -74,10 +70,10 @@ def graph_empty_cf():
     ax.set_title("После ЦФ")
     ax.grid(True)
     ax.plot()
-    canvas4 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
-    canvas4.draw()
-    canvas4.get_tk_widget().pack(fill=tk.X, expand=True)
-    canvases3 = canvas4
+    canvas3 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
+    canvas3.draw()
+    canvas3.get_tk_widget().pack(fill=tk.X, expand=True)
+    canvases3 = canvas3
 
 
 # Выполняем функцию для построения графика исходного сигнала
@@ -180,14 +176,14 @@ def plot_cf_signal():
     log_listbox.insert(tk.END, f"5 битовый код = {bit_code}")
 
 
-# Создаем окно приложения
-app = tk.Tk()
-app.geometry("1200x700")
-app.title("ЦОС (Задание 1)")
+# Создаем отдельное окно (приложение)
+app = tk.Tk()  # Создаем окно приложения
+app.geometry("1200x700")  # Задаем размер окна 
+app.title("ЦОС (Задание 1)")  # Задаем название окна 
 if os.path.exists("icon.ico"):  # Проверка, существует ли файл иконки
     app.iconbitmap("icon.ico")  # Если файл существует, используем его в качестве иконки
 else:
-    app.iconbitmap()
+    app.iconbitmap()  # Иначе используем стандартную иконку окна 
 
 # Создаем контейнеры для графиков
 graph_container = tk.Frame(app)
