@@ -14,7 +14,7 @@ global data, filename
 
 def read_file():
     global data, filename
-    filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])  # Открываем окно выбора файла
+    filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])  # Открываем окно выбора файла с .dat
     if not filename:
         log_listbox.insert(tk.END, f"Файл не выбран")
     else:
