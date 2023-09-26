@@ -1,4 +1,4 @@
-import colorama
+import os
 import numpy as np
 from matplotlib.figure import Figure
 from numpy.fft import fft
@@ -8,7 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy import signal
 
 # Определяем переменные
-canvases1, canvases2, canvases4 = None, None, None
+canvases1, canvases2, canvases3 = None, None, None
 global data, filename
 
 
@@ -20,18 +20,17 @@ def read_file():
     filename = filedialog.askopenfilename(filetypes=[("Выберите файл", "*.dat")])
 
     if not filename:
-        print(colorama.Fore.RED, "Файл не выбран")
         log_listbox.insert(tk.END, f"Файл не выбран")
     else:
         # Открываем файл в двоичном режиме ("rb")
         with open(filename, "rb") as file:
             # Читаем данные из файла в массив "data"
             data = np.fromfile(file, dtype=np.float32)
-            print(colorama.Fore.GREEN, "Файл прочитан успешно")
             log_listbox.delete(0, tk.END)
             log_listbox.insert(tk.END, f"Файл прочитан успешно")
-            log_listbox.insert(tk.END, f"ОБРАТИТЕ ВНИМАНИЕ!")
-            log_listbox.insert(tk.END, f"Графики строятся после нажатия кнопки")
+            log_listbox.insert(tk.END, f"ОБРАТИТЕ ВНИМАНИЕ!!!")
+            log_listbox.insert(tk.END, f"1) Здесь ведется работа ТОЛЬКО со 2-ым каналом")
+            log_listbox.insert(tk.END, f"2) Графики строятся ТОЛЬКО после нажатия кнопки")
 
             # Очищаем предыдущее содержимое в списке (для результатов в окне приложения)
             data_listbox_isx.delete(0, tk.END)
@@ -69,7 +68,7 @@ def graph_empty_spectr():
 
 
 def graph_empty_cf():
-    global canvases4
+    global canvases3
     fig4 = Figure(figsize=(60, 2))
     ax = fig4.add_subplot(111)
     ax.set_title("После ЦФ")
@@ -78,15 +77,16 @@ def graph_empty_cf():
     canvas4 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
     canvas4.draw()
     canvas4.get_tk_widget().pack(fill=tk.X, expand=True)
-    canvases4 = canvas4
+    canvases3 = canvas4
 
 
-# Строим график исходного сигнала
+# Выполняем функцию для построения графика исходного сигнала
 def std_graph():
     global canvases1
     if canvases1 is not None:
         canvases1.get_tk_widget().pack_forget()
 
+    # Строим график исходного сигнала
     fig1 = Figure(figsize=(60, 2))
     ax = fig1.add_subplot(111)
     ax.set_title("Исходный сигнал")
@@ -98,8 +98,9 @@ def std_graph():
     canvases1 = fig_canvas1
 
 
-# Строим график спектра сигнала
+# Выполняем функцию для нахождения спектра сигнала и построения его графика
 def spectr_graph():
+    # Проверка на наличие / отсутствие графика в приложении
     global canvases2
     if canvases2 is not None:
         canvases2.get_tk_widget().pack_forget()
@@ -108,21 +109,27 @@ def spectr_graph():
     spectrum = np.abs(fft_result)  # Вычисление спектра сигнала
     freqs = np.fft.fftfreq(len(data))  # Вычисление дискретных частот для спектра на основе длины массива данных.
 
-    fig2 = Figure(figsize=(60, 2))
-    ax = fig2.add_subplot(111)
-    ax.set_title("Спектр")
-    ax.grid(True)
-    ax.plot(freqs, spectrum, color="black")
+    half_length = len(data) // 2  # Берем половину длины массива данных
+    spectrum = spectrum[:half_length]  # Берем только первую половину спектра
+    freqs = freqs[:half_length]  # Берем только первую половину частот
+    # Это все мы делали для отображения спектра только в левой части
+
+    # Строим график спектра
+    fig2 = Figure(figsize=(60, 2))  # Создание нового объекта графика с заданными размерами
+    ax = fig2.add_subplot(111)  # Добавление области для построения графика в новую фигуру
+    ax.set_title("Спектр")  # Задаем заголовок графика.
+    ax.grid(True)  # Включение отображения сетки на графике
+    ax.plot(freqs, spectrum, color="black")  # Построение графика спектра сигнала и задаем цвет графика
     canvas2 = FigureCanvasTkAgg(fig2, master=graph_container2)  # Создаем холст для отображения графика
-    canvas2.draw()
-    canvas2.get_tk_widget().pack(fill=tk.X, expand=True)
-    canvases2 = canvas2
+    canvas2.draw()  # Отрисовка построенного графика на холсте
+    canvas2.get_tk_widget().pack(fill=tk.X, expand=True)  # Размещение холста в приложении и настройка его размеров
+    canvases2 = canvas2  # Сохранение объекта холста в глобальной переменной, чтобы он мог быть использован позже
 
 
 def plot_cf_signal():
-    global canvases4
-    if canvases4 is not None:
-        canvases4.get_tk_widget().pack_forget()
+    global canvases3
+    if canvases3 is not None:
+        canvases3.get_tk_widget().pack_forget()
 
     # Создание цифрового фильтра с прямоугольной идеальной формой АЧХ
     fs = 2000  # Частота дискретизации
@@ -149,15 +156,13 @@ def plot_cf_signal():
     ax.set_title("После ЦФ")
     ax.grid(True)
     ax.plot(channel_dpf, color="black")
-    canvas4 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
-    canvas4.draw()
-    canvas4.get_tk_widget().pack(fill=tk.X, expand=True)
-    canvases4 = canvas4
+    canvas3 = FigureCanvasTkAgg(fig4, master=graph_container3)  # Создаем холст для отображения графика
+    canvas3.draw()
+    canvas3.get_tk_widget().pack(fill=tk.X, expand=True)
+    canvases3 = canvas3
 
     threshold = 0.5  # Пороговое значение амплитуды
-
-    # Список для хранения значений битов
-    bit_values = []
+    bit_values = []  # Список для хранения значений битов
 
     # Разбиваем временной ряд на 5 равных частей
     signal_parts = np.array_split(channel_dpf, 5)
@@ -172,15 +177,17 @@ def plot_cf_signal():
 
     # Преобразуем список значений битов в 5-битовый код
     bit_code = ''.join(str(bit) for bit in bit_values)
-    print(f"5-битовый код: {bit_code}")
     log_listbox.insert(tk.END, f"5 битовый код = {bit_code}")
 
 
 # Создаем окно приложения
 app = tk.Tk()
 app.geometry("1200x700")
-app.title("ЦОС")
-app.iconbitmap("icon.ico")
+app.title("ЦОС (Задание 1)")
+if os.path.exists("icon.ico"):  # Проверка, существует ли файл иконки
+    app.iconbitmap("icon.ico")  # Если файл существует, используем его в качестве иконки
+else:
+    app.iconbitmap()
 
 # Создаем контейнеры для графиков
 graph_container = tk.Frame(app)
@@ -213,7 +220,7 @@ plot_cf_button.pack(side="left", anchor="sw", ipadx=10, ipady=10)
 
 # Список состояния и вывод 5-битового кода
 log_listbox = tk.Listbox(app)
-log_listbox.pack(side="left", anchor="sw", ipadx=60, ipady=2)
+log_listbox.pack(side="left", anchor="sw", ipadx=85, ipady=2)
 
 # Кнопка для закрытия окна
 close_button = tk.Button(app, text="Выход", command=app.destroy)
