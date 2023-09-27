@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from matplotlib.figure import Figure
-from numpy.fft import fft
 import tkinter as tk
 from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -135,7 +134,7 @@ def plot_cf_signal():
     # Создание фильтров для каждого канала
     filters = []
     for freq in f0:
-        b = signal.firwin(165, [freq - delta_f / 2, freq + delta_f / 2], fs=fs, pass_zero="bandpass")
+        b = signal.firwin(165, [freq - delta_f / 2, freq + delta_f / 2], fs=fs, pass_zero="bandpass") # type: ignore
         filters.append(b)
 
     # Выделение сигнала второго канала с помощью фильтрации ДПФ
@@ -234,3 +233,4 @@ data_listbox_isx.insert(tk.END, f"Данные исходного сигнала
 
 # Запускаем главный цикл приложения
 app.mainloop()
+
