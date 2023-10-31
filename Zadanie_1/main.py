@@ -23,7 +23,7 @@ h = np.zeros(M, dtype=np.float32)  # импульсная характерист
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Задание 3 (ЦОС)")
+        self.title("Задание 1 (ЦОС)")
         self.iconbitmap("KFU.ico")
         self.geometry("1200x700")
         
@@ -32,9 +32,9 @@ class Application(tk.Tk):
         self.graphIsx.pack()
         self.graphIsxEmpty()
         
-        self.graphImp = Frame(self)
-        self.graphImp.pack()
-        self.graphImpEmpty()
+        self.graphSpectr = Frame(self)
+        self.graphSpectr.pack()
+        self.graphSpectrEmpty()
         
         self.graphCf = Frame(self)
         self.graphCf.pack()
@@ -48,19 +48,15 @@ class Application(tk.Tk):
         self.exit_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
         
 
-        self.impBtn = Button(self, text="Характеристика h(i)", command=partial(self.numChannel))
+        self.impBtn = Button(self, text="Спектр", command=self.spectr)
         self.impBtn.pack(side="left", anchor="sw", ipadx=10, ipady=10)
         
-        self.cfBtn = Button(self, text="ЦФ", command=self.channelCF)
+        self.cfBtn = Button(self, text="ЦФ", command=partial(self.numChannel))
         self.cfBtn.pack(side="left", anchor="sw", ipadx=10, ipady=10)
         
         self.listBoxIsx = tk.Listbox(self)
         self.listBoxIsx.pack(side="left", anchor="sw", ipadx=5, ipady=2)
         self.listBoxIsx.insert(tk.END, 'Исходный сигнал')
-        
-        self.listBoxImpulse = tk.Listbox(self)
-        self.listBoxImpulse.pack(side="left", anchor="sw", ipadx=5, ipady=2)
-        self.listBoxImpulse.insert(tk.END, 'Характеристика h(i)')
         
         self.listBoxCF = tk.Listbox(self)
         self.listBoxCF.pack(side="left", anchor="sw", ipadx=5, ipady=2)
@@ -78,17 +74,17 @@ class Application(tk.Tk):
         self.canvas.get_tk_widget().pack(expand=True)
         isxCanvas = self.canvas
         
-    def graphImpEmpty(self):
+    def graphSpectrEmpty(self):
         # создание пустого графика
-        global impulseCanvas
+        global spectrCanvas
         figImpulse = Figure(figsize=(60, 2))
         self.ax = figImpulse.add_subplot(111)
         self.ax.set_title("Отсчеты импульсной хар-ки h(i). Порядок фильтра M = 65")
         self.ax.grid(True)
-        self.canvas = FigureCanvasTkAgg(figImpulse, master=self.graphImp)
+        self.canvas = FigureCanvasTkAgg(figImpulse, master=self.graphSpectr)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True)
-        impulseCanvas = self.canvas 
+        spectrCanvas = self.canvas 
         
     def graphCfEmpty(self):
         # создание пустого графика
@@ -137,48 +133,36 @@ class Application(tk.Tk):
         global channelNum
         channelNum = simpledialog.askinteger("Ввод канала", "Введите номер канала (от 1 до 5):")
         if channelNum is not None and channelNum > 0 and channelNum <= 5 or not channelNum:
-            self.impulseChar(channelNum)
+            self.channelCF(channelNum)
         else:
             messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
             return()
         
-    def impulseChar(self, channelNum):
+    def spectr(self):
+        X = np.zeros(N, dtype = np.complex64)
+        for k in range(N):
+            for n in range(N):
+                X[k] += x[n] * cmath.exp(-1j * 2 * np.pi * k * n / N)
+        
+                    
+        global spectrCanvas
+        if spectrCanvas is not None:
+            spectrCanvas.get_tk_widget().pack_forget()
+        figImpulse = Figure(figsize=(60, 2))
+        self.ax = figImpulse.add_subplot(111)
+        self.ax.set_title("Спектр")
+        self.ax.grid(True)
+        self.ax.bar(np.arange(0, N//2), [cmath.polar(X[k])[0] for k in range(N//2)], color = "black")
+        self.canvas = FigureCanvasTkAgg(figImpulse, master=self.graphSpectr)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(expand=True)
+        spectrCanvas = self.canvas
+        
+    def channelCF(self, channelNum):
         if channelNum is None:
             messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
             return()
-        freqCenter = channelNum * 40 #несущая частота с полученным каналом
-        freqLow = (freqCenter - 20)
-        freqHigh = (freqCenter + 20)
-        count = 2
-        
-        h[0] = (freqHigh - freqLow) / freqNeiqvist
-        self.listBoxImpulse.insert(tk.END, '1. ' + str(h[0]))
-        
-        for k in range(-M_2, M_2 + 1):
-            if k == 0:
-                h[k + M_2] = (freqHigh - freqLow) / freqNeiqvist
-            else:
-                h[k + M_2] = (np.sin(np.pi * k * freqHigh / freqNeiqvist) / (np.pi * k) -
-                            np.sin(np.pi * k * freqLow / freqNeiqvist) / (np.pi * k))
-                if k >= 0:
-                    self.listBoxImpulse.insert(tk.END, f"{count}. {str(h[k + M_2])}")
-                    count += 1
-                    
-        global impulseCanvas
-        if impulseCanvas is not None:
-            impulseCanvas.get_tk_widget().pack_forget()
-        figImpulse = Figure(figsize=(60, 2))
-        self.ax = figImpulse.add_subplot(111)
-        self.ax.set_title("Отсчеты импульсной хар-ки h(i). Порядок фильтра M = 65")
-        self.ax.grid(True)
-        self.ax.bar(range(-M_2, M_2 + 1), h, width=0.8, color = "black")
-        self.canvas = FigureCanvasTkAgg(figImpulse, master=self.graphImp)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(expand=True)
-        impulseCanvas = self.canvas
-        
-    def channelCF(self):
-        global channelNum
+        #global channelNum
             # Создание цифрового фильтра с прямоугольной идеальной формой АЧХ
         fs = 2000  # Частота дискретизации
         delta_f = 40  # Ширина полосы частот канала
