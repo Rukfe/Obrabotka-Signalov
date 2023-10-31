@@ -79,7 +79,7 @@ class Application(tk.Tk):
         global spectrCanvas
         figImpulse = Figure(figsize=(60, 2))
         self.ax = figImpulse.add_subplot(111)
-        self.ax.set_title("Отсчеты импульсной хар-ки h(i). Порядок фильтра M = 65")
+        self.ax.set_title("Спектр")
         self.ax.grid(True)
         self.canvas = FigureCanvasTkAgg(figImpulse, master=self.graphSpectr)
         self.canvas.draw()
