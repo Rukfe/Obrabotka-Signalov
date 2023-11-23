@@ -1,20 +1,17 @@
-import code
 import tkinter as tk
-from matplotlib.lines import lineStyles
 import numpy as np
 import cmath
-import math
 from tkinter import Button, Frame, filedialog, messagebox, simpledialog
 from functools import partial
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 N = 500  # число отсчетов
 M = 65  # порядок фильтра
 M_2 = M // 2
 freqDiskret = 2000 #частота дискретизации
-freqNeiqvist = freqDiskret / 2
+delta_f = 40  # Ширина полосы частот канала
+freqCenter = [40, 80, 120, 160, 200]  # Центральные частоты каналов (40, 80, 120, 160, 200 Гц)
 x = np.zeros(N, dtype=np.float32)  # входной сигнал
 y = np.zeros(N, dtype=np.float32)
 h = np.zeros(M, dtype=np.float32)  # импульсная характеристика
@@ -27,7 +24,6 @@ class Application(tk.Tk):
         self.iconbitmap("KFU.ico")
         self.geometry("1200x700")
         
-        
         self.graphIsx = Frame(self)
         self.graphIsx.pack()
         self.graphIsxEmpty()
@@ -39,7 +35,6 @@ class Application(tk.Tk):
         self.graphCf = Frame(self)
         self.graphCf.pack()
         self.graphCfEmpty()
-        
 
         self.file_button = tk.Button(self, text="Выбрать файл и построить\nграфик исходного сигнала", command=self.open_file)
         self.file_button.pack(side="left", anchor="sw", ipadx=10, ipady=2)
@@ -47,7 +42,6 @@ class Application(tk.Tk):
         self.exit_button = tk.Button(self, text="Выход", command=self.quit)
         self.exit_button.pack(side="right", anchor="se", ipadx=10, ipady=10)
         
-
         self.impBtn = Button(self, text="Спектр", command=self.spectr)
         self.impBtn.pack(side="left", anchor="sw", ipadx=10, ipady=10)
         
@@ -99,14 +93,15 @@ class Application(tk.Tk):
         cfCanvas = self.canvas       
     
     def open_file(self):
+        global data
         file_path = filedialog.askopenfilename(filetypes=[('.dat файлы', '*.dat')])
         if not file_path:
-            messagebox.showerror("Ошибка!", "Файл не был прочитан!")
+            data = None
+            messagebox.showinfo("Внимание!", "Файл не был выбран!")
             return()
         with open(file_path, 'rb') as file:
             k = 0
             while True:
-                global data
                 data = file.read(4)  # 4 байта для float32
                 if not data:
                     messagebox.showinfo("Успех!", "Файл был прочитан!")
@@ -117,7 +112,6 @@ class Application(tk.Tk):
                 k += 1
                 
         # построение графика
-        global isxCanvas
         if isxCanvas is not None:
             isxCanvas.get_tk_widget().pack_forget()
         figIsx = Figure(figsize = (60 , 2))
@@ -130,7 +124,15 @@ class Application(tk.Tk):
         self.canvas.get_tk_widget().pack(expand=True)
         
     def numChannel(self):
-        global channelNum
+        global channelNum, data
+        try:
+            if data is None:
+                messagebox.showerror('Ошибка!', 'Не был выбран файл')
+                return()
+        except NameError:
+            messagebox.showerror('Ошибка!', 'Не был выбран файл')
+            return()
+        
         channelNum = simpledialog.askinteger("Ввод канала", "Введите номер канала (от 1 до 5):")
         if channelNum is not None and channelNum > 0 and channelNum <= 5 or not channelNum:
             self.channelCF(channelNum)
@@ -139,6 +141,13 @@ class Application(tk.Tk):
             return()
         
     def spectr(self):
+        try:
+            if data is None:
+                messagebox.showerror('Ошибка!', 'Не был выбран файл')
+                return()
+        except NameError:
+            messagebox.showerror('Ошибка!', 'Не был выбран файл')
+            return()
         X = np.zeros(N, dtype = np.complex64)
         for k in range(N):
             for n in range(N):
@@ -146,6 +155,7 @@ class Application(tk.Tk):
         
                     
         global spectrCanvas
+        
         if spectrCanvas is not None:
             spectrCanvas.get_tk_widget().pack_forget()
         figImpulse = Figure(figsize=(60, 2))
@@ -159,29 +169,26 @@ class Application(tk.Tk):
         spectrCanvas = self.canvas
         
     def channelCF(self, channelNum):
+        if data is None:
+            messagebox.showerror('Ошибка!', 'хуй')
+        count = 1 
         if channelNum is None:
             messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
             return()
-        #global channelNum
-            # Создание цифрового фильтра с прямоугольной идеальной формой АЧХ
-        fs = 2000  # Частота дискретизации
-        delta_f = 40  # Ширина полосы частот канала
-        f0 = [40, 80, 120, 160, 200]  # Центральные частоты каналов (40, 80, 120, 160, 200 Гц)
-        count = 1
         
     # Вычисляем границы полосы частот для выбранного канала
         if channelNum is None:
             messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
             return()
-        f1 = f0[channelNum - 1] - delta_f / 2
-        f2 = f0[channelNum - 1] + delta_f / 2
+        f1 = freqCenter[channelNum - 1] - delta_f / 2
+        f2 = freqCenter[channelNum - 1] + delta_f / 2
 
     # Создаем фильтр для выбранного канала
         for n in range(M):
             if n == M_2:
-                h[n] = (2 * (f2 - f1)) / fs
+                h[n] = (2 * (f2 - f1)) / freqDiskret
             else:
-                h[n] = (np.sin(2 * cmath.pi * (n - M_2) * f2 / fs) - np.sin(2 * cmath.pi * (n - M_2) * f1 / fs)) / (
+                h[n] = (np.sin(2 * cmath.pi * (n - M_2) * f2 / freqDiskret) - np.sin(2 * cmath.pi * (n - M_2) * f1 / freqDiskret)) / (
                             cmath.pi * (n - M_2))
     
      # Фильтруем сигнал с помощью импульсной характеристики
@@ -189,9 +196,7 @@ class Application(tk.Tk):
         for value in y_filtered:
             self.listBoxCF.insert(tk.END, f"{count}. {value}")
             count += 1
-            
         
-
         global cfCanvas
         if cfCanvas is not None:
             cfCanvas.get_tk_widget().pack_forget()
@@ -204,10 +209,7 @@ class Application(tk.Tk):
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True)
         cfCanvas = self.canvas
-        
-        # Добавляем значения графика в listbox
-        
-    
+
     
 if __name__ == '__main__':
     app = Application()

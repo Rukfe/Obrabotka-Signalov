@@ -1,13 +1,11 @@
-import code
 import tkinter as tk
-from matplotlib.lines import lineStyles
 import numpy as np
 import cmath
-import math
 from tkinter import Button, Frame, filedialog, messagebox, simpledialog
 from functools import partial
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 
 N = 500  # число отсчетов
@@ -135,12 +133,17 @@ class Application(tk.Tk):
         
     def numChannel(self):
         global channelNum
+        try:
+            if data is None:
+                messagebox.showerror('Ошибка!', 'Не был выбран файл')
+                return()
+        except NameError:
+            messagebox.showerror('Ошибка!', 'Не был выбран файл')
+            return()
+        
         channelNum = simpledialog.askinteger("Ввод канала", "Введите номер канала (от 1 до 5):")
         if channelNum is not None and channelNum > 0 and channelNum <= 5 or not channelNum:
             self.impulseChar(channelNum)
-        else:
-            messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
-            return()
         
     def impulseChar(self, channelNum):
         if channelNum is None:
@@ -178,6 +181,14 @@ class Application(tk.Tk):
         impulseCanvas = self.canvas
         
     def channelCF(self):
+        try:
+            if data is None:
+                messagebox.showerror('Ошибка!', 'Не был выбран файл')
+                return()
+        except NameError:
+            messagebox.showerror('Ошибка!', 'Не был выбран файл')
+            return()
+            
         global channelNum
             # Создание цифрового фильтра с прямоугольной идеальной формой АЧХ
         fs = 2000  # Частота дискретизации
@@ -186,12 +197,16 @@ class Application(tk.Tk):
         count = 1
         
     # Вычисляем границы полосы частот для выбранного канала
-        if channelNum is None:
-            messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
+        try:
+            if channelNum is None:
+                messagebox.showerror('Ошибка!', 'Введите верное значение канала (целое число от 1 до 5)')
+                return()
+            f1 = f0[channelNum - 1] - delta_f / 2
+            f2 = f0[channelNum - 1] + delta_f / 2
+        except NameError:
+            messagebox.showerror('Ошибка!', 'Не был выбран канал (можно выбрать через кнопку "Характеристика h(i)")')
             return()
-        f1 = f0[channelNum - 1] - delta_f / 2
-        f2 = f0[channelNum - 1] + delta_f / 2
-
+            
     # Создаем фильтр для выбранного канала
         for n in range(M):
             if n == M_2:
@@ -205,7 +220,6 @@ class Application(tk.Tk):
         for value in y_filtered:
             self.listBoxCF.insert(tk.END, f"{count}. {value}")
             count += 1
-            
         
 
         global cfCanvas
@@ -220,10 +234,7 @@ class Application(tk.Tk):
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True)
         cfCanvas = self.canvas
-        
-        # Добавляем значения графика в listbox
-        
-    
+
     
 if __name__ == '__main__':
     app = Application()
