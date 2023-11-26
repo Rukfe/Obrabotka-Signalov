@@ -1,6 +1,6 @@
 import tkinter as tk
 import numpy as np
-import cmath
+import cmath as cmath
 from tkinter import Button, Frame, filedialog, messagebox, simpledialog
 from functools import partial
 from matplotlib.figure import Figure
@@ -193,8 +193,8 @@ class Application(tk.Tk):
         figImpulse = Figure(figsize=(60, 2))
         self.ax = figImpulse.add_subplot(111)
         self.ax.set_title(
-            "Отсчеты импульсной хар-ки h(i).\
-            Порядок фильтра M = 65"
+            "Отсчеты импульсной хар-ки h(i). "
+            "Порядок фильтра M = 65"
         )
         self.ax.grid(True)
         self.ax.bar(range(-M_2, M_2 + 1), h, width=0.8, color="black")
