@@ -103,7 +103,8 @@ class Application(tk.Tk):
 
     def open_file(self):
         global data
-        file_path = filedialog.askopenfilename(filetypes=[(".dat файлы", "*.dat")])
+        file_path = filedialog.askopenfilename(filetypes=[(".dat файлы",
+                                                           "*.dat")])
         if not file_path:
             data = None
             messagebox.showinfo("Внимание!", "Файл не был выбран!")
@@ -154,7 +155,8 @@ class Application(tk.Tk):
             self.channelCF(channelNum)
         else:
             messagebox.showerror(
-                "Ошибка!", "Введите верное значение канала (целое число от 1 до 5)"
+                "Ошибка!", "Введите верное значение канала"
+                " (целое число от 1 до 5)"
             )
             return ()
 
@@ -195,14 +197,16 @@ class Application(tk.Tk):
         count = 1
         if channelNum is None:
             messagebox.showerror(
-                "Ошибка!", "Введите верное значение канала (целое число от 1 до 5)"
+                "Ошибка!", "Введите верное значение канала"
+                " (целое число от 1 до 5)"
             )
             return ()
 
         # Вычисляем границы полосы частот для выбранного канала
         if channelNum is None:
             messagebox.showerror(
-                "Ошибка!", "Введите верное значение канала (целое число от 1 до 5)"
+                "Ошибка!", "Введите верное значение канала"
+                " (целое число от 1 до 5)"
             )
             return ()
         f1 = freqCenter[channelNum - 1] - delta_f / 2
