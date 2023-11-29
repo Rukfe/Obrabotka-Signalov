@@ -27,7 +27,6 @@ class Application(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Задание 1 (ЦОС)")
-        self.iconbitmap("KFU.ico")
         self.geometry("1200x700")
 
         self.graphIsx = Frame(self)
